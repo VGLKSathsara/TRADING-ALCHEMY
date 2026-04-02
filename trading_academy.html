@@ -1,0 +1,1295 @@
+Here is an HTML document that implements a complete "Trading Academy" web
+application, featuring structured courses, interactive lessons, and knowledge
+checks. ```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>Trading Academy — SMC · MMNR · Alchimea</title>
+    <style>
+      /* ── Reset & Base (polished sinner dev style) ── */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      :root {
+        --bg: #ffffff;
+        --bg2: #f6f5f0;
+        --bg3: #eeede8;
+        --text: #1a1a18;
+        --text2: #6b6a63;
+        --text3: #9b9a93;
+        --border: rgba(0, 0, 0, 0.1);
+        --border2: rgba(0, 0, 0, 0.18);
+        --radius: 10px;
+        --radius-sm: 6px;
+        --green: #639922;
+        --green-bg: #eaf3de;
+        --green-text: #27500a;
+        --red: #e24b4a;
+        --red-bg: #fcebeb;
+        --red-text: #791f1f;
+        --blue: #378add;
+        --blue-bg: #e6f1fb;
+        --blue-text: #0c447c;
+        --purple: #7f77dd;
+        --purple-bg: #eeedfe;
+        --purple-text: #3c3489;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #1c1c1a;
+          --bg2: #252522;
+          --bg3: #2e2e2b;
+          --text: #e8e6de;
+          --text2: #9b9a93;
+          --text3: #6b6a63;
+          --border: rgba(255, 255, 255, 0.1);
+          --border2: rgba(255, 255, 255, 0.18);
+          --green-bg: #1a2e0a;
+          --green-text: #8fc754;
+          --red-bg: #2e0a0a;
+          --red-text: #f08080;
+          --blue-bg: #0a1e35;
+          --blue-text: #7ab8f0;
+          --purple-bg: #1e1b3a;
+          --purple-text: #b6aef0;
+        }
+      }
+      html {
+        font-size: 15px;
+      }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter',
+          sans-serif;
+        background: var(--bg3);
+        color: var(--text);
+        min-height: 100vh;
+        line-height: 1.5;
+      }
+
+      /* ── App Shell ── */
+      .shell {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
+      /* ── Top Nav (sinner glow) ── */
+      .topnav {
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+        padding: 0 20px;
+        display: flex;
+        align-items: center;
+        gap: 0;
+        height: 56px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        backdrop-filter: blur(2px);
+      }
+      .logo {
+        font-size: 16px;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--text) 0%, var(--green) 80%);
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+        margin-right: 28px;
+        white-space: nowrap;
+        letter-spacing: -0.3px;
+      }
+      .course-tabs {
+        display: flex;
+        gap: 4px;
+        flex: 1;
+        overflow-x: auto;
+        scrollbar-width: thin;
+      }
+      .course-tab {
+        padding: 6px 16px;
+        border-radius: 40px;
+        border: none;
+        background: transparent;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text2);
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      }
+      .course-tab:hover {
+        background: var(--bg2);
+        color: var(--text);
+        transform: translateY(-1px);
+      }
+      .course-tab.active {
+        background: var(--bg2);
+        color: var(--text);
+        box-shadow: inset 0 -1px 0 var(--green);
+      }
+      .overall-prog {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: 16px;
+        background: var(--bg2);
+        padding: 5px 12px;
+        border-radius: 40px;
+      }
+      .overall-track {
+        width: 80px;
+        height: 4px;
+        background: var(--bg3);
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .overall-fill {
+        height: 100%;
+        background: var(--green);
+        border-radius: 4px;
+        transition: width 0.4s ease;
+      }
+      .overall-pct {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text2);
+        min-width: 32px;
+      }
+
+      /* ── Main Layout (flexible) ── */
+      .main {
+        display: flex;
+        flex: 1;
+        max-width: 1280px;
+        margin: 0 auto;
+        width: 100%;
+        padding: 28px 20px 48px;
+        gap: 28px;
+      }
+      .sidebar {
+        width: 240px;
+        flex-shrink: 0;
+      }
+      .sidebar-inner {
+        position: sticky;
+        top: 80px;
+        max-height: calc(100vh - 100px);
+        overflow-y: auto;
+        padding-right: 4px;
+      }
+      .content {
+        flex: 1;
+        min-width: 0;
+      }
+
+      /* sexy sidebar */
+      .sidebar-section {
+        margin-bottom: 28px;
+      }
+      .sidebar-label {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text3);
+        padding: 0 8px;
+        margin-bottom: 8px;
+      }
+      .sidebar-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text2);
+        transition: all 0.15s;
+        border: none;
+        background: transparent;
+        width: 100%;
+        text-align: left;
+        margin-bottom: 2px;
+      }
+      .sidebar-item:hover {
+        background: var(--bg2);
+        color: var(--text);
+        transform: translateX(2px);
+      }
+      .sidebar-item.active {
+        background: var(--bg2);
+        color: var(--text);
+        font-weight: 600;
+        border-left: 2px solid var(--green);
+      }
+      .sidebar-item.done {
+        color: var(--green);
+      }
+      .sidebar-item .snum {
+        width: 20px;
+        height: 20px;
+        border-radius: 20px;
+        border: 1px solid var(--border2);
+        font-size: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg);
+        font-weight: 600;
+      }
+      .sidebar-item.active .snum {
+        background: var(--text);
+        color: var(--bg);
+        border-color: var(--text);
+      }
+      .sidebar-item.done .snum {
+        background: var(--green-bg);
+        border-color: var(--green);
+        color: var(--green-text);
+      }
+
+      /* Lesson card (luxe) */
+      .card {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        overflow: hidden;
+        margin-bottom: 24px;
+        transition: box-shadow 0.2s;
+      }
+      .card-head {
+        padding: 24px 28px 16px;
+        border-bottom: 1px solid var(--border);
+      }
+      .badge {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 40px;
+        margin-bottom: 12px;
+        letter-spacing: 0.02em;
+        backdrop-filter: blur(2px);
+      }
+      .card-title {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 8px;
+        letter-spacing: -0.3px;
+      }
+      .card-sub {
+        font-size: 14px;
+        color: var(--text2);
+        line-height: 1.4;
+      }
+      .card-body {
+        padding: 20px 28px;
+      }
+      .analogy-box {
+        background: var(--bg2);
+        border-radius: 20px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+        border-left: 3px solid var(--blue);
+      }
+      .analogy-lbl {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--text3);
+        margin-bottom: 6px;
+      }
+      .analogy-txt {
+        font-size: 14px;
+        color: var(--text);
+        line-height: 1.55;
+        font-style: normal;
+      }
+
+      .block {
+        margin-bottom: 20px;
+      }
+      .block-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .bdot {
+        width: 10px;
+        height: 10px;
+        border-radius: 10px;
+        flex-shrink: 0;
+      }
+      .block-body {
+        font-size: 14px;
+        color: var(--text2);
+        line-height: 1.6;
+      }
+
+      .rule-box {
+        border-left: 4px solid var(--green);
+        background: var(--green-bg);
+        border-radius: 12px;
+        padding: 14px 18px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--green-text);
+        margin: 20px 0;
+      }
+      .warn-box {
+        border-left: 4px solid var(--red);
+        background: var(--red-bg);
+        border-radius: 12px;
+        padding: 14px 18px;
+        font-size: 14px;
+        color: var(--red-text);
+        margin: 20px 0;
+      }
+      .key-box {
+        background: var(--bg2);
+        border-radius: 16px;
+        padding: 16px 20px;
+        margin: 20px 0;
+        border: 0.5px solid var(--border2);
+      }
+      .key-lbl {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--green);
+        margin-bottom: 6px;
+      }
+      .key-txt {
+        font-size: 14px;
+        color: var(--text);
+        font-weight: 500;
+      }
+
+      /* Quiz area */
+      .quiz-area {
+        border-top: 1px solid var(--border);
+        padding: 20px 28px;
+        background: var(--bg2);
+      }
+      .quiz-hdr {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--text3);
+        margin-bottom: 12px;
+      }
+      .quiz-q {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 16px;
+      }
+      .opts {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .opt {
+        padding: 12px 18px;
+        border: 1px solid var(--border2);
+        border-radius: 40px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        background: var(--bg);
+        text-align: left;
+        transition: 0.1s;
+      }
+      .opt:hover:not(:disabled) {
+        background: var(--bg3);
+        transform: scale(0.99);
+      }
+      .opt.correct {
+        background: var(--green-bg);
+        border-color: var(--green);
+        color: var(--green-text);
+      }
+      .opt.wrong {
+        background: var(--red-bg);
+        border-color: var(--red);
+        color: var(--red-text);
+      }
+      .fb {
+        font-size: 13px;
+        margin-top: 16px;
+        padding: 12px 18px;
+        border-radius: 24px;
+        display: none;
+        line-height: 1.5;
+      }
+      .fb.show {
+        display: block;
+      }
+      .fb.ok {
+        background: var(--green-bg);
+        color: var(--green-text);
+        border-left: 4px solid var(--green);
+      }
+      .fb.bad {
+        background: var(--red-bg);
+        color: var(--red-text);
+        border-left: 4px solid var(--red);
+      }
+
+      .card-foot {
+        padding: 16px 28px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: var(--bg);
+      }
+      .foot-info {
+        font-size: 12px;
+        color: var(--text3);
+        font-weight: 500;
+      }
+      .btn {
+        font-size: 12px;
+        font-weight: 600;
+        padding: 8px 20px;
+        border-radius: 40px;
+        border: 1px solid var(--border2);
+        background: transparent;
+        color: var(--text);
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .btn:hover {
+        background: var(--bg2);
+        transform: translateY(-1px);
+      }
+      .btn.primary {
+        background: var(--text);
+        color: var(--bg);
+        border-color: var(--text);
+      }
+      .btn.primary:hover {
+        opacity: 0.9;
+        transform: scale(0.98);
+      }
+      .btn:disabled {
+        opacity: 0.3;
+        cursor: default;
+        transform: none;
+      }
+
+      /* progress */
+      .lesson-prog-track {
+        background: var(--bg3);
+        border-radius: 12px;
+        height: 6px;
+        overflow: hidden;
+        margin: 12px 0 6px;
+      }
+      .lesson-prog-fill {
+        height: 100%;
+        border-radius: 12px;
+        transition: width 0.3s;
+      }
+
+      @media (max-width: 740px) {
+        .sidebar {
+          display: none;
+        }
+        .main {
+          padding: 16px;
+          gap: 0;
+        }
+        .topnav {
+          padding: 0 12px;
+        }
+        .overall-prog {
+          display: none;
+        }
+        .card-title {
+          font-size: 20px;
+        }
+        .card-body {
+          padding: 16px;
+        }
+        .quiz-area {
+          padding: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <nav class="topnav">
+        <div class="logo">
+          ⚡ TRADING<span style="color: var(--green)">·ALCHEMY</span>
+        </div>
+        <div class="course-tabs" id="course-tabs"></div>
+        <div class="overall-prog">
+          <div class="overall-track">
+            <div class="overall-fill" id="overall-fill"></div>
+          </div>
+          <div class="overall-pct" id="overall-pct">0%</div>
+        </div>
+      </nav>
+      <div class="main">
+        <aside class="sidebar">
+          <div class="sidebar-inner" id="sidebar"></div>
+        </aside>
+        <div class="content">
+          <div class="lesson-header" id="lesson-header"></div>
+          <div id="lesson-area"></div>
+        </div>
+      </div>
+    </div>
+    <script>
+      // FULL DYNAMIC COURSE DATA — merged all frameworks (Beginner, Daily Buyers, SMC·MMNR·Alchimea)
+      // I'll inject the enriched dataset with all lessons and mod structure for advanced course
+      const COURSES = [
+        {
+          id: 'beginner',
+          name: 'Trading from Zero',
+          short: 'Zero → Pro',
+          color: '#378ADD',
+          lessons: [
+            {
+              badge: '⚡ FOUNDATION',
+              bc: '#E6F1FB',
+              bt: '#185FA5',
+              title: 'What is the stock market?',
+              sub: 'Before charts — understand the arena',
+              analogy:
+                'Think of the stock market like a giant marketplace. Companies sell small pieces of themselves (shares). Price moves by supply/demand.',
+              blocks: [
+                {
+                  c: '#378ADD',
+                  t: 'What moves price?',
+                  b: 'Supply and demand. More buyers = price up. More sellers = price down.',
+                },
+                {
+                  c: '#639922',
+                  t: 'Who are buyers/sellers?',
+                  b: 'Institutions, funds, retail. Price is the last agreed trade.',
+                },
+              ],
+              rule: 'Price goes up when more buyers than sellers.',
+              warn: null,
+              key: 'You read evidence, not future.',
+              quiz: {
+                q: "A stock's price is rising quickly. What is most likely?",
+                opts: [
+                  'Company got lucky',
+                  'More buyers than sellers',
+                  'Price keeps rising',
+                  'Market broken',
+                ],
+                correct: 1,
+                ok: 'Correct: demand > supply.',
+                bad: 'Price rises when demand exceeds supply.',
+              },
+            },
+            {
+              badge: '📊 CANDLES',
+              bc: '#FAEEDA',
+              bt: '#854F0B',
+              title: 'Reading a candle',
+              sub: 'Every candle tells a battle',
+              analogy:
+                'A candle pictures the open, high, low, close. Green = buyers won, Red = sellers won.',
+              blocks: [
+                {
+                  c: '#639922',
+                  t: '4 prices',
+                  b: 'Open, High, Low, Close. Body = commitment, wicks = rejection.',
+                },
+              ],
+              rule: 'Green candle closing near high = buyers controlled.',
+              warn: 'Doji = indecision, no trade.',
+              key: 'Close relative to range tells 80%',
+              quiz: {
+                q: 'Opens $10, high $14, low $9, close $13. Who won?',
+                opts: ['Sellers', 'Buyers', 'Doji'],
+                correct: 1,
+                ok: 'Buyers won (closed near high)',
+                bad: 'Buyers dominated.',
+              },
+            },
+            {
+              badge: '📈 VOLUME',
+              bc: '#EAF3DE',
+              bt: '#3B6D11',
+              title: 'Volume — truth detector',
+              sub: 'Conviction or noise?',
+              analogy: 'High volume = real participation.',
+              blocks: [
+                {
+                  c: '#639922',
+                  t: 'What volume is',
+                  b: 'Shares traded. Compare to 20d average.',
+                },
+              ],
+              rule: 'Green + high volume = conviction.',
+              warn: 'Low volume breakouts trap beginners.',
+              key: 'Volume = lie detector',
+              quiz: {
+                q: 'Stock A +5% on 3x vol, Stock B +5% on 0.5x vol. Which trustworthy?',
+                opts: ['A', 'B', 'Equal'],
+                correct: 0,
+                ok: 'High volume confirms buying.',
+                bad: 'A has real conviction.',
+              },
+            },
+            {
+              badge: '📐 TREND',
+              bc: '#EEEDFE',
+              bt: '#534AB7',
+              title: 'Trend — direction',
+              sub: 'Higher highs & higher lows',
+              analogy: 'Current helps if you go with it.',
+              blocks: [
+                { c: '#7F77DD', t: 'Uptrend', b: 'HH & HL' },
+                { c: '#639922', t: 'Downtrend', b: 'LH & LL' },
+              ],
+              rule: 'Only trade with trend.',
+              warn: "'Cheap' in downtrend = trap.",
+              key: 'Identify trend in 10 sec.',
+              quiz: {
+                q: '$100→110→103→118→108→125. Trend?',
+                opts: ['Downtrend', 'Uptrend'],
+                correct: 1,
+                ok: 'Higher highs & higher lows',
+                bad: 'Uptrend confirmed.',
+              },
+            },
+            {
+              badge: '🛡️ RISK',
+              bc: '#FAECE7',
+              bt: '#993C1D',
+              title: 'Risk management',
+              sub: 'Survival first',
+              analogy: 'Casino: bet sizing > winning every hand.',
+              blocks: [
+                { c: '#E24B4A', t: 'Stop loss', b: 'Predefined exit' },
+                { c: '#639922', t: 'Risk/Reward', b: 'At least 1:2' },
+              ],
+              rule: 'Never risk >2% per trade.',
+              warn: 'Holding losers = account killer.',
+              key: 'Capital preservation first.',
+              quiz: {
+                q: 'Buy $100, stop $95, target $115. Ratio?',
+                opts: ['1:1', '1:3', '3:1'],
+                correct: 1,
+                ok: 'Risk $5 to make $15 = 1:3',
+                bad: 'Great ratio.',
+              },
+            },
+            {
+              badge: '✅ CHECKLIST',
+              bc: '#F1EFE8',
+              bt: '#444441',
+              title: 'First trade checklist',
+              sub: '5-step routine',
+              analogy: 'Pilot checklist.',
+              blocks: [
+                { c: '#7F77DD', t: 'Trend? Candle? Volume? Support? Risk?' },
+              ],
+              rule: '5/5 green = consider trade.',
+              warn: "Don't skip steps.",
+              key: 'Patience = skill.',
+              quiz: {
+                q: 'Uptrend + strong green + high vol + 20ma bounce + 1:3 R:R. Trade?',
+                opts: ['Yes', 'No'],
+                correct: 0,
+                ok: 'All boxes checked',
+                bad: 'Full alignment.',
+              },
+            },
+          ],
+        },
+        {
+          id: 'buyers',
+          name: 'Daily Buyers',
+          short: 'Buyer DNA',
+          color: '#BA7517',
+          lessons: [
+            {
+              badge: '🧠 FOOTPRINTS',
+              bc: '#E6F1FB',
+              bt: '#185FA5',
+              title: 'Why buyers leave footprints',
+              sub: 'Price + volume = evidence',
+              analogy: 'Every transaction leaves mark',
+              blocks: [
+                { c: '#378ADD', t: 'Market auction', b: 'Daily close verdict' },
+              ],
+              rule: 'Green on high volume = statement',
+              warn: null,
+              key: 'Reading evidence',
+              quiz: {
+                q: 'Green close but volume 40% of avg?',
+                opts: ['Strong buying', 'Low conviction'],
+                correct: 1,
+                ok: 'Lack of sellers, not aggressive buyers',
+                bad: 'Volume confirms conviction.',
+              },
+            },
+            {
+              badge: '🕯️ CANDLE POWER',
+              bc: '#FAEEDA',
+              bt: '#854F0B',
+              title: 'Reading daily candle',
+              sub: 'Body & wicks tell all',
+              analogy: 'Battle picture',
+              blocks: [{ c: '#BA7517', t: 'Body = commitment' }],
+              rule: 'Close top 25% = buyers dominate',
+              warn: 'Long upper wick = seller resistance',
+              key: 'Close position matters',
+              quiz: {
+                q: 'Open $50, low $46, close $53, range $45-54',
+                opts: ['Sellers', 'Strong buyers'],
+                correct: 1,
+                ok: 'Absorbed selling, closed near high',
+                bad: 'Buyers won decisively.',
+              },
+            },
+            {
+              badge: '🔊 VOLUME PRO',
+              bc: '#EAF3DE',
+              bt: '#3B6D11',
+              title: 'Volume truth',
+              sub: '20d average baseline',
+              analogy: 'Polygraph test',
+              blocks: [
+                {
+                  c: '#639922',
+                  t: 'Accumulation vs distribution',
+                  b: 'Up + high vol = accumulation',
+                },
+              ],
+              rule: '3-5 days above avg volume + low vol pullback = accumulation',
+              warn: 'Low vol breakout = fake',
+              key: 'High vol moves are real',
+              quiz: {
+                q: 'Breakout new highs on 0.8x avg vol',
+                opts: ['Buy', 'Wait', 'Short'],
+                correct: 1,
+                ok: 'Suspect, institutions not in',
+                bad: 'Low vol = high failure.',
+              },
+            },
+          ],
+        },
+        {
+          id: 'advanced',
+          name: 'SMC · MMNR · Alchimea',
+          short: 'ELITE',
+          color: '#7F77DD',
+          modules: [
+            {
+              name: '⚡ SMART MONEY (SMC)',
+              color: '#378ADD',
+              bg: '#E6F1FB',
+              tc: '#0C447C',
+            },
+            { name: '🌀 MMNR', color: '#7F77DD', bg: '#EEEDFE', tc: '#3C3489' },
+            {
+              name: '🔥 ALCHIMEA',
+              color: '#1D9E75',
+              bg: '#E1F5EE',
+              tc: '#085041',
+            },
+          ],
+          lessons: [
+            {
+              mod: 0,
+              badge: 'SMC · Intro',
+              title: 'What is Smart Money?',
+              sub: 'Follow institutional footprints',
+              analogy: 'Banks manipulate price to grab liquidity.',
+              blocks: [
+                {
+                  c: '#378ADD',
+                  t: 'Who is smart money?',
+                  b: 'Banks, hedge funds, central banks.',
+                },
+                {
+                  c: '#639922',
+                  t: 'Core idea',
+                  b: 'Stop hunts and order blocks.',
+                },
+              ],
+              rule: 'Market is not random — liquidity sweeps are deliberate.',
+              warn: 'Needs screen time.',
+              key: 'Think like institution.',
+              quiz: {
+                q: "Why don't institutions click buy?",
+                opts: ['Too large orders', 'They manipulate'],
+                correct: 0,
+                ok: 'Orders would move market against them.',
+                bad: 'Need to engineer fills.',
+              },
+            },
+            {
+              mod: 0,
+              badge: 'SMC · Liquidity',
+              title: 'Liquidity — fuel',
+              sub: 'Buy-side & sell-side',
+              analogy: 'Fisherman casts where fish are.',
+              blocks: [
+                {
+                  c: '#378ADD',
+                  t: 'BSL above old highs',
+                  b: 'Stop losses of shorts',
+                },
+                {
+                  c: '#E24B4A',
+                  t: 'SSL below lows',
+                  b: 'Stop losses of longs',
+                },
+              ],
+              rule: 'Liquidity sweep + reversal = smart money fill.',
+              warn: 'Fakeout trap.',
+              key: 'Equal highs = neon sign.',
+              quiz: {
+                q: 'Price spikes above equal highs $100 to $101.5 then drops to $98',
+                opts: ['Genuine breakout', 'Liquidity sweep & reversal'],
+                correct: 1,
+                ok: 'BSL grab then distribution',
+                bad: 'Manipulation detected.',
+              },
+            },
+            {
+              mod: 0,
+              badge: 'SMC · Order Block',
+              title: 'Order Blocks — entry zones',
+              sub: 'Last opposing candle before impulse',
+              analogy: 'Reserved table',
+              blocks: [
+                {
+                  c: '#378ADD',
+                  t: 'Bullish OB',
+                  b: 'Last red candle before strong up move',
+                },
+              ],
+              rule: 'Price returns to OB = institutional re-entry.',
+              warn: 'Not every red candle qualifies.',
+              key: 'Where smart money placed orders.',
+              quiz: {
+                q: 'Sharp rally after red candle $90-95. Pullback to $91',
+                opts: ['OB zone $90-95', 'No setup'],
+                correct: 0,
+                ok: 'Bullish OB, long area',
+                bad: 'Return to OB = buy zone.',
+              },
+            },
+            {
+              mod: 0,
+              badge: 'SMC · BOS/CHoCH',
+              title: 'Break of Structure',
+              sub: 'Trend change signals',
+              analogy: 'Boxing counter punch',
+              blocks: [
+                {
+                  c: '#378ADD',
+                  t: 'BOS = trend continues',
+                  b: 'CHoCH = first warning',
+                },
+              ],
+              rule: 'CHoCH = tighten stops, wait for BOS confirmation.',
+              warn: 'One red candle is not CHoCH.',
+              key: 'BOS → CHoCH → BOS reverse = cycle.',
+              quiz: {
+                q: 'Uptrend, first break below prior swing low',
+                opts: ['BOS down', 'CHoCH warning'],
+                correct: 1,
+                ok: 'Warning, not reversal signal',
+                bad: 'Wait for BOS down.',
+              },
+            },
+            {
+              mod: 0,
+              badge: 'SMC · FVG',
+              title: 'Fair Value Gaps',
+              sub: 'Price magnets',
+              analogy: 'Highway skip',
+              blocks: [
+                {
+                  c: '#378ADD',
+                  t: 'Bullish FVG',
+                  b: 'Candle3 low > Candle1 high',
+                },
+              ],
+              rule: 'Price returns to fill imbalance.',
+              warn: 'May take time.',
+              key: 'Combine FVG + OB = high confluence.',
+              quiz: {
+                q: 'C1 high $50, C3 low $54',
+                opts: ['FVG $50-54', 'No FVG'],
+                correct: 0,
+                ok: 'Bullish gap zone',
+                bad: 'Imbalance = future support.',
+              },
+            },
+            {
+              mod: 1,
+              badge: 'MMNR · Intro',
+              title: 'Market Maker Non-Retracement',
+              sub: 'The 4-phase cycle',
+              analogy: 'Roller coaster: accumulation → manipulation → delivery',
+              blocks: [
+                { c: '#7F77DD', t: 'Accumulation', b: 'Sideways' },
+                { c: '#E24B4A', t: 'Manipulation', b: 'Stop hunt' },
+                { c: '#639922', t: 'Delivery', b: 'MMNR move' },
+              ],
+              rule: 'Trade only delivery phase after manipulation.',
+              warn: 'Fake breakout = manipulation.',
+              key: 'Enter after sweep & displacement.',
+              quiz: {
+                q: 'Break below support & immediate reversal',
+                opts: ['Manipulation, enter long', 'Breakdown'],
+                correct: 0,
+                ok: 'Phase 2 complete, delivery up',
+                bad: 'Reversal = MMNR entry.',
+              },
+            },
+            {
+              mod: 1,
+              badge: 'MMNR · Entry',
+              title: 'MMNR Entry model',
+              sub: 'Displacement + FVG pullback',
+              analogy: 'Sprinter explosion',
+              blocks: [
+                {
+                  c: '#378ADD',
+                  t: 'Rejection candle',
+                  b: 'Sweep & close back inside range',
+                },
+                {
+                  c: '#639922',
+                  t: 'Displacement',
+                  b: 'Large impulsive candle',
+                },
+              ],
+              rule: 'First pullback into FVG/OB = entry.',
+              warn: "Don't chase after 50% move.",
+              key: 'Entry with stop beyond sweep.',
+              quiz: {
+                q: 'Range, spike below, large green displacement, pullback into FVG',
+                opts: ['Sell', 'Buy FVG pullback'],
+                correct: 1,
+                ok: 'MMNR long setup',
+                bad: 'Textbook delivery entry.',
+              },
+            },
+            {
+              mod: 1,
+              badge: 'MMNR · TF Alignment',
+              title: 'Timeframe hierarchy',
+              sub: 'Daily bias → 4H setup → 15m entry',
+              analogy: 'Captain map',
+              blocks: [
+                {
+                  c: '#7F77DD',
+                  t: 'Daily = direction',
+                  b: '4H = accumulation & sweep',
+                },
+              ],
+              rule: 'All timeframes align = high probability.',
+              warn: 'No alignment = no trade.',
+              key: 'Patience for confluence.',
+              quiz: {
+                q: 'Daily downtrend, 4H MMNR short setup, 15m FVG short. Trade?',
+                opts: ['Yes all bearish', 'No'],
+                correct: 0,
+                ok: 'Full alignment',
+                bad: 'High conv short.',
+              },
+            },
+            {
+              mod: 2,
+              badge: 'Alchimea · Intro',
+              title: 'What is Alchimea?',
+              sub: 'Frameworks synthesis',
+              analogy: 'Alchemy → combine to gold',
+              blocks: [
+                {
+                  c: '#1D9E75',
+                  t: 'Stacking SMC + MMNR + PA',
+                  b: 'Personalized system',
+                },
+              ],
+              rule: 'Master one framework before blending.',
+              warn: 'Avoid framework hopping.',
+              key: 'Unified market vision.',
+              quiz: {
+                q: 'Switching frameworks every week?',
+                opts: ['Alchimea', 'Framework hopping'],
+                correct: 1,
+                ok: 'Mastery needed first',
+                bad: 'Not integration.',
+              },
+            },
+            {
+              mod: 2,
+              badge: 'Alchimea · Stack',
+              title: '4-layer Stack',
+              sub: 'Structure → Liquidity → Entry → Candle',
+              analogy: 'Doctor diagnosis',
+              blocks: [
+                {
+                  c: '#1D9E75',
+                  t: 'Daily BOS bias',
+                  b: 'MMNR cycle + OB/FVG confluence + engulfing',
+                },
+              ],
+              rule: 'All 4 layers = maximum probability.',
+              warn: 'Most days no full stack.',
+              key: 'Multiplied probability.',
+              quiz: {
+                q: 'Daily BOS up, MMNR bullish, OB+FVG overlap, bullish engulfing. Layers?',
+                opts: ['1', '4'],
+                correct: 1,
+                ok: 'All 4 layers aligned',
+                bad: 'Perfect Alchimea.',
+              },
+            },
+            {
+              mod: 2,
+              badge: 'Alchimea · Psychology',
+              title: 'Crowd psychology',
+              sub: 'Fear & greed at key levels',
+              analogy: 'Crowd emotion',
+              blocks: [
+                {
+                  c: '#1D9E75',
+                  t: 'Retail always late',
+                  b: 'Maximum fear = smart money buys',
+                },
+              ],
+              rule: 'Buy fear, sell greed at technical levels.',
+              warn: 'Sentiment alone is not a trade.',
+              key: '5th layer of Alchimea.',
+              quiz: {
+                q: 'Bullish OB + MMNR setup + retail panic news',
+                opts: ['Sell', 'High conv long'],
+                correct: 1,
+                ok: 'Fear = fuel for reversal',
+                bad: 'Panic = accumulation signal.',
+              },
+            },
+            {
+              mod: 2,
+              badge: 'Alchimea · Final',
+              title: 'Complete Alchimea trade',
+              sub: 'EURUSD case',
+              analogy: 'Master composition',
+              blocks: [
+                {
+                  c: '#1D9E75',
+                  t: 'Daily uptrend, 4H range, sweep, displacement, FVG+OB confluence, pin bar, fear sentiment',
+                },
+              ],
+              rule: 'Entry at 1.0858, stop 1.0838, target 1.0980.',
+              warn: 'Quality > quantity.',
+              key: '5-layer conviction.',
+              quiz: {
+                q: 'What made it Alchimea?',
+                opts: ['5 frameworks stacked', '1:6 RR'],
+                correct: 0,
+                ok: 'Multi-lens confirmation',
+                bad: 'Framework stacking = gold.',
+              },
+            },
+          ],
+        },
+      ]
+
+      // state
+      let activeCourse = 0
+      let activeLessonByCourse = [0, 0, 0]
+      let answeredState = COURSES.map((c) =>
+        new Array(c.lessons.length).fill(false),
+      )
+      let doneState = COURSES.map((c) =>
+        new Array(c.lessons.length).fill(false),
+      )
+
+      function totalLessons() {
+        return COURSES.reduce((s, c) => s + c.lessons.length, 0)
+      }
+      function totalDone() {
+        return doneState.reduce((s, a) => s + a.filter(Boolean).length, 0)
+      }
+
+      function lessonColor(cIdx) {
+        const c = COURSES[cIdx]
+        const l = c.lessons[activeLessonByCourse[cIdx]]
+        if (c.modules && l.mod !== undefined) return c.modules[l.mod].color
+        return c.color
+      }
+      function lessonBadgeBg(cIdx) {
+        const c = COURSES[cIdx]
+        const l = c.lessons[activeLessonByCourse[cIdx]]
+        if (c.modules && l.mod !== undefined) return c.modules[l.mod].bg
+        return l.bc || c.color
+      }
+      function lessonBadgeText(cIdx) {
+        const c = COURSES[cIdx]
+        const l = c.lessons[activeLessonByCourse[cIdx]]
+        if (c.modules && l.mod !== undefined) return c.modules[l.mod].tc
+        return l.bt || '#fff'
+      }
+
+      function renderCourseTabs() {
+        document.getElementById('course-tabs').innerHTML = COURSES.map(
+          (c, i) =>
+            `<button class="course-tab ${i === activeCourse ? 'active' : ''}" onclick="switchCourse(${i})">${c.short}</button>`,
+        ).join('')
+      }
+      function renderOverall() {
+        const pct = totalLessons()
+          ? Math.round((totalDone() / totalLessons()) * 100)
+          : 0
+        document.getElementById('overall-fill').style.width = pct + '%'
+        document.getElementById('overall-pct').textContent = pct + '%'
+      }
+      function renderSidebar() {
+        const c = COURSES[activeCourse]
+        const li = activeLessonByCourse[activeCourse]
+        if (c.modules) {
+          let html = ''
+          c.modules.forEach((mod, mIdx) => {
+            const modLessons = c.lessons
+              .map((l, i) => ({ l, i }))
+              .filter((x) => x.l.mod === mIdx)
+            if (!modLessons.length) return
+            html += `<div class="sidebar-section"><div class="sidebar-label" style="color:${mod.color}">${mod.name}</div>`
+            modLessons.forEach(({ l, i }, j) => {
+              html += `<button class="sidebar-item ${i === li ? 'active' : ''} ${doneState[activeCourse][i] ? 'done' : ''}" onclick="goToLesson(${i})">
+          <span class="snum">${doneState[activeCourse][i] ? '✓' : j + 1}</span>
+          <span>${l.badge.replace(/.*· /, '').slice(0, 18)}</span>
+        </button>`
+            })
+            html += '</div>'
+          })
+          document.getElementById('sidebar').innerHTML = html
+        } else {
+          let html = `<div class="sidebar-section"><div class="sidebar-label">${c.name}</div>`
+          c.lessons.forEach((l, i) => {
+            html += `<button class="sidebar-item ${i === li ? 'active' : ''} ${doneState[activeCourse][i] ? 'done' : ''}" onclick="goToLesson(${i})">
+        <span class="snum">${doneState[activeCourse][i] ? '✓' : i + 1}</span>
+        <span>${l.badge}</span>
+      </button>`
+          })
+          html += '</div>'
+          document.getElementById('sidebar').innerHTML = html
+        }
+      }
+      function renderLessonHeader() {
+        const c = COURSES[activeCourse]
+        const done = doneState[activeCourse].filter(Boolean).length
+        const pct = Math.round((done / c.lessons.length) * 100)
+        const col = lessonColor(activeCourse)
+        document.getElementById('lesson-header').innerHTML =
+          `<div class="course-crumb"><span style="color:${col};font-weight:700">${c.name}</span> <span>· Lesson ${activeLessonByCourse[activeCourse] + 1}/${c.lessons.length}</span></div>
+  <div class="lesson-prog-track"><div class="lesson-prog-fill" style="width:${pct}%;background:${col}"></div></div>
+  <div class="lesson-prog-txt">${done}/${c.lessons.length} mastered</div>`
+      }
+      function lockQuiz() {
+        const c = COURSES[activeCourse],
+          li = activeLessonByCourse[activeCourse],
+          l = c.lessons[li]
+        l.quiz.opts.forEach((_, i) => {
+          const b = document.getElementById('o' + i)
+          if (b) {
+            b.disabled = true
+            if (i === l.quiz.correct) b.classList.add('correct')
+          }
+        })
+        const fb = document.getElementById('fb')
+        if (fb && !fb.classList.contains('show')) {
+          fb.className = 'fb show ok'
+          fb.textContent = '✓ ' + l.quiz.ok
+        }
+      }
+      function answer(idx) {
+        const ci = activeCourse,
+          li = activeLessonByCourse[ci]
+        if (answeredState[ci][li]) return
+        const l = COURSES[ci].lessons[li]
+        answeredState[ci][li] = true
+        doneState[ci][li] = true
+        l.quiz.opts.forEach((_, i) => {
+          let b = document.getElementById('o' + i)
+          b.disabled = true
+          if (i === l.quiz.correct) b.classList.add('correct')
+          else if (i === idx) b.classList.add('wrong')
+        })
+        const fb = document.getElementById('fb'),
+          ok = idx === l.quiz.correct
+        fb.className = `fb show ${ok ? 'ok' : 'bad'}`
+        fb.textContent = (ok ? '✓ ' : '✗ ') + (ok ? l.quiz.ok : l.quiz.bad)
+        const nb = document.getElementById('nb')
+        if (nb) nb.style.opacity = '1'
+        renderSidebar()
+        renderLessonHeader()
+        renderOverall()
+      }
+      function goToLesson(i) {
+        if (i < 0 || i >= COURSES[activeCourse].lessons.length) return
+        activeLessonByCourse[activeCourse] = i
+        renderLesson()
+      }
+      function switchCourse(i) {
+        activeCourse = i
+        renderCourseTabs()
+        renderLesson()
+      }
+      function renderLesson() {
+        const c = COURSES[activeCourse],
+          li = activeLessonByCourse[activeCourse],
+          l = c.lessons[li]
+        const col = lessonColor(activeCourse),
+          bbg = lessonBadgeBg(activeCourse),
+          btx = lessonBadgeText(activeCourse)
+        const prevI = li > 0 ? li - 1 : -1,
+          nextI = li < c.lessons.length - 1 ? li + 1 : -1,
+          done = answeredState[activeCourse][li]
+        document.getElementById('lesson-area').innerHTML = `
+    <div class="card"><div class="card-head"><span class="badge" style="background:${bbg};color:${btx}">${l.badge}</span><div class="card-title">${l.title}</div><div class="card-sub">${l.sub}</div></div>
+    <div class="card-body"><div class="analogy-box"><div class="analogy-lbl">⚡ ANALOGY</div><div class="analogy-txt">${l.analogy}</div></div>
+    ${l.blocks.map((b) => `<div class="block"><div class="block-title"><span class="bdot" style="background:${b.c}"></span>${b.t}</div><div class="block-body">${b.b}</div></div>`).join('')}
+    <div class="rule-box">🎯 ${l.rule}</div>${l.warn ? `<div class="warn-box">⚠️ ${l.warn}</div>` : ''}
+    <div class="key-box"><div class="key-lbl">🧠 KEY TAKEAWAY</div><div class="key-txt">${l.key}</div></div></div>
+    <div class="quiz-area"><div class="quiz-hdr">📘 KNOWLEDGE CHECK</div><div class="quiz-q">${l.quiz.q}</div><div class="opts">${l.quiz.opts.map((o, i) => `<button class="opt" id="o${i}" onclick="answer(${i})">${o}</button>`).join('')}</div><div class="fb" id="fb"></div></div>
+    <div class="card-foot"><button class="btn" onclick="goToLesson(${prevI})" ${prevI < 0 ? 'disabled' : ''}>← PREV</button><span class="foot-info">🏆 ${totalDone()}/${totalLessons()} completed</span><button class="btn primary" id="nb" onclick="goToLesson(${nextI})" ${nextI < 0 ? 'disabled' : ''} style="background:${col};opacity:${done ? 1 : 0.6}">${nextI < 0 ? '🏁 MASTERED →' : 'NEXT →'}</button></div></div>`
+        if (done) lockQuiz()
+        renderSidebar()
+        renderLessonHeader()
+        renderOverall()
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+      renderCourseTabs()
+      renderLesson()
+    </script>
+  </body>
+</html>
+```
